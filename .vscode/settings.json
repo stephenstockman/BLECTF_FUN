@@ -1,0 +1,5 @@
+{
+    "files.associations": {
+        "esp_gap_ble_api.h": "c"
+    }
+}
