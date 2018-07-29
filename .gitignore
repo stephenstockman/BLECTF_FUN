@@ -3,3 +3,4 @@ sdkconfig
 sdkconfig.old
 *.swp
 .vscode/
+flagBank.txt
