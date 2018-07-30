@@ -32,7 +32,7 @@
 #define PROFILE_NUM 1
 #define PROFILE_APP_IDX 0
 #define ESP_APP_ID 0x55
-#define SAMPLE_DEVICE_NAME "Don't trust the intern."
+#define SAMPLE_DEVICE_NAME "fun=fantasyuniverse"
 #define SVC_INST_ID 0
 
 #define GATTS_DEMO_CHAR_VAL_LEN_MAX 100
@@ -170,8 +170,6 @@ static struct gatts_profile_inst blectf_profile_tab[PROFILE_NUM] = {
 
 /* Service */
 static const uint16_t GATTS_SERVICE_UUID_TEST = 0x00FF;
-static const uint16_t GATTS_CHAR_UUID_FLAG = 0xFF00;
-static const uint16_t GATTS_CHAR_UUID_SCORE = 0xFF01;
 
 static const uint16_t GATTS_CHAR_UUID_NAME = 0xFF02;
 static const uint16_t GATTS_CHAR_UUID_HLTH = 0xFF03;
@@ -206,16 +204,12 @@ static const uint8_t char_value[4] = {0x11, 0x22, 0x33, 0x44};
 
 // start ctf data vars
 static char writeData[100];
-static char flag_state[20] = {'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F'};
-static uint8_t score_read_value[11] = {'S', 'c', 'o', 'r', 'e', ':', ' ', '0', '/', '2', '0'};
 
-//static const uint8_t brute_write_flag[33] = {'B','r','u','t','e',' ','f','o','r','c','e',' ','m','y',' ','v','a','l','u','e', ' ', '0','x','0','0',' ','t','o',' ','0','x','f','f'};
-static const uint8_t flag_read_value[16] = {'W', 'r', 'i', 't', 'e', ' ', 'F', 'l', 'a', 'g', 's', ' ', 'H', 'e', 'r', 'e'};
 static const char name_value[] = "NAME HERE";
-static const char hlth_value[] = "H H H";
-static const char old1_value[] = "Old Gent";
-static const char old2_value[] = "Old Gent";
-static const char old3_value[] = "Old Gent";
+static const char hlth_value[] = "HEALTH: H H H";
+static const char old1_value[] = "flag:bit.ly/2LOGYtf";
+static const char old2_value[] = "Old Gent 2";
+static const char old3_value[] = "Old Gent 3";
 static const char bart_value[] = "Bartender";
 static const char pomm_value[] = "Pommel";
 static const char hilt_value[] = "Hilt";
@@ -226,8 +220,6 @@ static const char blks_value[] = "Blacksmith";
 static const char trol_value[] = "Troll";
 static const char terr_value[] = "Terrain";
 
-int score = 0;
-static char string_score[10] = "0";
 int BLINK_GPIO = 2;
 int indicate_handle_state = 0;
 int send_response = 0;
@@ -241,22 +233,6 @@ static const esp_gatts_attr_db_t gatt_db[HRS_IDX_NB] =
         [IDX_SVC] =
             {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&primary_service_uuid, ESP_GATT_PERM_READ, sizeof(uint16_t), sizeof(GATTS_SERVICE_UUID_TEST), (uint8_t *)&GATTS_SERVICE_UUID_TEST}},
 
-        /* SCORE Characteristic Declaration */
-        [IDX_CHAR_SCORE] =
-            {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ, CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read}},
-
-        /* SCORE Characteristic Value */
-        [IDX_CHAR_VAL_SCORE] =
-            {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_CHAR_UUID_SCORE, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(score_read_value), (uint8_t *)score_read_value}},
-
-        /* FLAG Characteristic Declaration */
-        [IDX_CHAR_FLAG] =
-            {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write}},
-
-        /* FLAG Characteristic Value */
-        [IDX_CHAR_VAL_FLAG] =
-            {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_CHAR_UUID_FLAG, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(flag_read_value), (uint8_t *)flag_read_value}},
-
         //////	STATS	//////
         /* NAME Characteristic Declaration */
         [IDX_CHAR_NAME] =
@@ -264,7 +240,7 @@ static const esp_gatts_attr_db_t gatt_db[HRS_IDX_NB] =
 
         /* NAME Characteristic Value */
         [IDX_CHAR_VAL_NAME] =
-            {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_CHAR_UUID_NAME, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(name_value), (uint8_t *)name_value}},
+            {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_CHAR_UUID_NAME, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(name_value) - 1, (uint8_t *)name_value}},
 
         /* HLTH Characteristic Declaration */
         [IDX_CHAR_HLTH] =
@@ -272,20 +248,16 @@ static const esp_gatts_attr_db_t gatt_db[HRS_IDX_NB] =
 
         /* HLTH Characteristic Value */
         [IDX_CHAR_VAL_HLTH] =
-            {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_CHAR_UUID_HLTH, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(hlth_value), (uint8_t *)hlth_value}},
+            {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_CHAR_UUID_HLTH, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(hlth_value) - 1, (uint8_t *)hlth_value}},
 
         //////	OLD GENTS + BARTENDER	//////
         /* OLD1 Characteristic Declaration */
         [IDX_CHAR_OLD1] =
-            {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ, CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write_notify}},
+            {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read}},
 
-        /* Characteristic Value */
+        /* OLD1 Characteristic Value */
         [IDX_CHAR_VAL_OLD1] =
             {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_CHAR_UUID_OLD1, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(old1_value) - 1, (uint8_t *)old1_value}},
-
-        /* Client Characteristic Configuration Descriptor */
-        [IDX_CHAR_CFG_OLD1] =
-            {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_client_config_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, sizeof(uint16_t), sizeof(old1_value) - 1, (uint8_t *)old1_value}},
 
         /* OLD2 Characteristic Declaration */
         [IDX_CHAR_OLD2] =
@@ -299,13 +271,13 @@ static const esp_gatts_attr_db_t gatt_db[HRS_IDX_NB] =
         [IDX_CHAR_CFG_OLD2] =
             {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_client_config_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, sizeof(uint16_t), sizeof(old2_value) - 1, (uint8_t *)old2_value}},
 
-        /* OL3 Characteristic Declaration */
+        /* indicate flag Characteristic Declaration */
         [IDX_CHAR_OLD3] =
-            {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ, CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write_notify}},
+            {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ, CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write_indicate}},
 
         /* Characteristic Value */
         [IDX_CHAR_VAL_OLD3] =
-            {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_CHAR_UUID_OLD3, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(old3_value) - 1, (uint8_t *)old3_value}},
+            {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_CHAR_UUID_OLD3, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(old3_value), (uint8_t *)old3_value}},
 
         /* Client Characteristic Configuration Descriptor */
         [IDX_CHAR_CFG_OLD3] =
@@ -435,22 +407,6 @@ static int get_score(char c[20])
         }
     }
     return score;
-}
-static void set_score()
-{
-    //set scores
-    score = get_score(flag_state);
-
-    itoa(score, string_score, 10);
-    for (int i = 0; i < strlen(string_score); ++i)
-    {
-        if (strlen(string_score) == 1)
-        {
-            score_read_value[7] = ' ';
-        }
-        score_read_value[6 + i] = string_score[i];
-    }
-    esp_ble_gatts_set_attr_value(blectf_handle_table[IDX_CHAR_SCORE] + 1, sizeof score_read_value, score_read_value);
 }
 
 static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
@@ -672,37 +628,37 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
 
             if (blectf_handle_table[IDX_CHAR_NAME] + 1 == param->write.handle)
             {
-                esp_ble_gatts_set_attr_value(blectf_handle_table[IDX_CHAR_NAME] + 1, 20, (uint8_t *)"thisistheflagwelcome");
+                esp_ble_gatts_set_attr_value(blectf_handle_table[IDX_CHAR_NAME] + 1, 20, (uint8_t *)"thisisaflag4yurname");
             }
 
-            // old1
-            if (blectf_handle_table[IDX_CHAR_OLD1] + 1 == param->write.handle)
-            {
-                char notify_data[20] = ".3H...bit.ly/2LOGYtf";
-                esp_ble_gatts_set_attr_value(blectf_handle_table[IDX_CHAR_OLD1] + 1, sizeof(old1_value) - 1, (uint8_t *)old1_value);
-                esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, blectf_handle_table[IDX_CHAR_OLD1], sizeof(notify_data), (uint8_t *)notify_data, false);
-            }
+            //////  Old Gents   //////
+            //TODO: make how you hear from them different-write then read, write notify, write indicate
             // old2
             if (blectf_handle_table[IDX_CHAR_OLD2] + 1 == param->write.handle)
             {
-                char notify_data[20] = ".6E...bit.ly/2v3Qlhq";
+                char notify_data[20] = "flag::bit.ly/2v3Qlhq";
                 esp_ble_gatts_set_attr_value(blectf_handle_table[IDX_CHAR_OLD2] + 1, sizeof(old2_value) - 1, (uint8_t *)old2_value);
                 esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, blectf_handle_table[IDX_CHAR_OLD2], sizeof(notify_data), (uint8_t *)notify_data, false);
             }
             // old3
             if (blectf_handle_table[IDX_CHAR_OLD3] + 1 == param->write.handle)
             {
-                char notify_data[20] = "11Y..bit.ly/2NLcVmC";
-                esp_ble_gatts_set_attr_value(blectf_handle_table[IDX_CHAR_OLD3] + 1, sizeof(old3_value) - 1, (uint8_t *)old3_value);
-                esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, blectf_handle_table[IDX_CHAR_OLD3], sizeof(notify_data), (uint8_t *)notify_data, false);
-            }
+                char indicate_data[20] = "flag::bit.ly/2NLcVmC";
+                esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, blectf_handle_table[IDX_CHAR_VAL_OLD3], sizeof(indicate_data), (uint8_t *)indicate_data, true);
+               }
 
-            // bart
-            if (blectf_handle_table[IDX_CHAR_BART] + 1 == param->write.handle && strcmp(writeData, "sword?") == 0)
+            // bart   
+            if (blectf_handle_table[IDX_CHAR_BART] + 1 == param->write.handle && strcmp(writeData,"Where 2 get a sword")==0)
             {
-                char notify_data[20] = "gather5pieces4sword!";
+                char notify_data[20] = "Gather 5 pieces of ";
+                char notify_data1[20] = "a sword from the cem";
+                char notify_data2[18] = "etary.The flag is";
+                char notify_data3[20] = "goget5piecesofasword";
                 esp_ble_gatts_set_attr_value(blectf_handle_table[IDX_CHAR_BART] + 1, sizeof(bart_value) - 1, (uint8_t *)bart_value);
                 esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, blectf_handle_table[IDX_CHAR_BART], sizeof(notify_data), (uint8_t *)notify_data, false);
+                esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, blectf_handle_table[IDX_CHAR_BART], sizeof(notify_data1), (uint8_t *)notify_data1, false);
+                esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, blectf_handle_table[IDX_CHAR_BART], sizeof(notify_data2), (uint8_t *)notify_data2, false);
+                esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, blectf_handle_table[IDX_CHAR_BART], sizeof(notify_data3), (uint8_t *)notify_data3, false);
             }
 
             //////	SWORD	//////
@@ -857,42 +813,6 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
                 }
             }
 
-            //Easter eggs
-            // give yourself more health
-            if (blectf_handle_table[IDX_CHAR_HLTH] + 1 == param->write.handle)
-            {
-                esp_ble_gatts_set_attr_value(blectf_handle_table[IDX_CHAR_HLTH] + 1, 11, (uint8_t *)"No cheating");
-            }
-
-            //handle flags
-            if (blectf_handle_table[IDX_CHAR_FLAG] + 1 == param->write.handle)
-            {
-                // make sure flag read value stays static
-                esp_ble_gatts_set_attr_value(blectf_handle_table[IDX_CHAR_FLAG] + 1, sizeof flag_read_value, flag_read_value);
-
-                //TODO: fix keys to be something random
-                if (strcmp(writeData, "thisistheflagwelcome") == 0)
-                {
-                    // name gimme
-                    flag_state[0] = 'T';
-                }
-                if (strcmp(writeData, "HHHEEEEEEYYYYYYYYYYY") == 0)
-                {
-                    // name gimme
-                    flag_state[1] = 'T';
-                }
-                if (strcmp(writeData, "gather5pieces4sword!") == 0)
-                {
-                    // name gimme
-                    flag_state[2] = 'T';
-                }
-                if (strcmp(writeData, "replace me") == 0)
-                {
-                    flag_state[3] = 'T';
-                }
-                ESP_LOGI(GATTS_TABLE_TAG, "FLAG STATE = %s", flag_state);
-                set_score();
-            }
             /* send response when param->write.need_rsp is true*/
             //if (param->write.need_rsp && send_response == 0){
             if (param->write.need_rsp)
