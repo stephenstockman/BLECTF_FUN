@@ -1,66 +1,18 @@
-IN CASE ANYONE SEES THIS BEFORE IM DONE. I LIKED BLECTF MADE BY HACKGNAR BUT FELT IT WASN'T AS FUN AS IT COULD BE SO I MADE MY OWN FLAGS AND CORRESPONDING STORY. THIS IS A TEMPORARY README AS I WILL EVENTUALLY WRITE MY OWN. IM JUST AN INTERN SO PLEASE BE NICE!
-[![Follow Hackgnar]](https://twitter.com/hackgnar)
-
-## BLE Capture the Flag
-The purpose of BLE CTF is to teach the core concepts of Bluetooth Low Energy client and server interactions.  While it has also been built to be fun, it was built with the intent to teach and reinforce core concepts that are needed to plunge into the world of Bluetooth hacking.  After completing this CTF, you should have everything you need to start fiddling with any BLE GATT device you can find.
+## BLE Capture the Flag: Fantasy Universe
+The purpose of BLECTF_FUN is to grow on the initial design of [ble_ctf](https://github.com/hackgnar/ble_ctf). Although it reiterates some of the information found in the original it also incorporates some new challenges found in the last couple flags. All the flags are introduced and managed in a story format by blectf_fun_story.py. Flags are autosaved on entry and progress resumes on rerunning the python script. The CTF uses the same ESP32 micrococontroller as the original and is meant to be used as a refresher lesson some time after completing the original. 
 
 ## Setting Up the CTF
-In order to set up the CTF you will need the following:
-1. The code in this repository to build the CTF GATT server
-2. An esp32 microcontroller ([I sell overpriced pre-flashed ones here](https://www.ebay.com/itm/173370426012?ssPageName=STRK:MESELX:IT&_trksid=p3984.m1558.l2649))
-3. A Linux box (OSX/Win + Linux VM works) with a bluetooth controller or a bluetooth usb dongle ([I ❤️ UD100s](https://www.amazon.com/Sena-UD100-Bluetooth-Class1-Adapter/dp/B01BHD7WR2/ref=cm_cr_arp_d_product_top?ie=UTF8))
-4. Bluetooth tools such as Bluez tools (hcitool, gatttool, etc) or [bleah](https://github.com/evilsocket/bleah)
+Visit https://github.com/hackgnar/ble_ctf for setup.
 
-To get setup, [read this documentation](docs/setup.md)
+## How to Find Flags
+All flags after the first two directly correspond to elements in the story. For example talking to the older gentleman in the story could mean you need to char-write-req --listen at the address of one of the gentleman. Note that everything read, notified, indicated, whatever should be converted to ASCII. Lot's of hints and meaning goes into what the esp32 returns so having a hex to ascii converter on hand is necessary.ALL FLAGS ARE 20 CHARACTERS AND SHOULD BE SUBMITTED IN ASCII FORMAT. 
 
-## Flags
+## How to Submit Flags
+Run `python blectf_fun_story.py`
+Enter flag when prompted. REPEAT:ALL FLAGS ARE 20 CHARACTERS AND SHOULD BE SUBMITTED IN ASCII FORMAT. 
 
-### How to Submit Flags
+## If You Have Beaten ble_ctf Recently
+I highly suggest just skipping most of the initial flags and going to the good ones. All flagas can be easily found in blectf_fun_story.py. These would be the last 4 flags as only they have any new information. You will need the three links found in the previous flags to defeat the bridge troll though.
 
-Before you can submit flags, you have to discover the Bluetooth MAC address of your device.  Here are a couple example commands to help you find your device:
-
-Discover MAC using hcitool:   
-```` sudo hcitool blescan ````
-
-Discover MAC using bleah:   
-```` sudo bleah ````
-
-Now that you have found your device’s MAC address, you can now communicate with it.  Before we get started with flags, let’s check out how we can see our current score.  In order to see where you are in the CTF, you can read from handle 42 on the device to see how many flags you have.  The following are example commands of how to view your current score.  Make sure you replace the MAC address in the example commands with the MAC address of your device. 
-
-Show score with gatttool:  
-```` gatttool -b de:ad:be:ef:be:f1 --char-read -a 0x002a|awk -F':' '{print $2}'|tr -d ' '|xxd -r -p;printf '\n'  ````
-
-Show score with bleah:  
-```` sudo bleah -b "30:ae:a4:20:79:da" -e ````
-
-Ok, ok, ok, on to the flags! All flags are md5 sums truncated to 20 characters to avoid MTU limits by some hardware.  They can be submitted to the gatt server on handle 44.  The following are examples of how to submit a flag.  Make sure you replace the MAC address in the example commands with the MAC address of your device:   
-
-Submit using gatttool:  
-```` gatttool -b de:ad:be:ef:be:f1 --char-write-req -a 0x002c -n $(echo -n "some flag value"|xxd -ps) ````
-
-Submit using bleah:  
-```` sudo bleah -b "30:ae:a4:20:79:da" -n 0x002c -d "some flag value" ````
-
-### Flag Hints
-| Flag | Description | Hint |
-| ------- | ----------------------------- | ------- |
-| Flag 1 | This flag is a gift and can only be obtained from reading the hint! | [Read Me!](docs/hints/flag1.md) |
-| Flag 0x002e | Learn how to read handles | [More](docs/hints/flag2.md) |
-| Flag 0x0030 | Read handle puzzle fun | [More](docs/hints/flag3.md) |
-| Flag 0x0016 | Learn about discoverable device attributes | [More](docs/hints/flag4.md) |
-| Flag 0x0032 | Learn about reading and writing to handles | [More](docs/hints/flag5.md) |
-| Flag 0x0034 | Learn about reading and writing ascii to handles | [More](docs/hints/flag6.md) |
-| Flag 0x0036 | Learn about reading and writing hex to handles | [More](docs/hints/flag7.md) |
-| Flag 0x0038 | Learn about reading and writing to handles differently | [More](docs/hints/flag8.md) |
-| Flag 0x003c | Learn about write fuzzing | [More](docs/hints/flag9.md) |
-| Flag 0x003e | Learn about read and write speeds | [More](docs/hints/flag10.md) |
-| Flag 0x0040 | Learn about single response notifications | [More](docs/hints/flag11.md) |
-| Flag 0x0042 | Learn about single response indicate | [More](docs/hints/flag12.md) |
-| Flag 0x0046 | Learn about multi response notifications | [More](docs/hints/flag13.md) |
-| Flag 0x0048 | Learn about multi response indicate | [More](docs/hints/flag14.md) |
-| Flag 0x004c | Learn about BT client device attributes | [More](docs/hints/flag15.md) |
-| Flag 0x004e | Learn about message sizes MTU | [More](docs/hints/flag16.md) |
-| Flag 0x0050 | Learn about write responses | [More](docs/hints/flag17.md) |
-| Flag 0x0052 | Hidden notify property | [More](docs/hints/flag18.md) |
-| Flag 0x0054 | Use multiple handle properties | [More](docs/hints/flag19.md) |
-| Flag 0x0056 | OSINT the author! | [More](docs/hints/flag20.md) |
+## Author's Notes
+Overall this is more of a fan-made project by an intern who wanted to play around a bit on the developement side after completing ble_ctf. It currently has only been beta tested by myself so there's probably some bugs so sorry about that if you find them post them in issues or submit a pull request with a fix. Most of the code is borrowed form esp-idf demo documentation, similar to ble_ctf, and draws direct inspiration from ble_ctf. I may add some more flags in the future but would love it if someone else added their own or made their own verison of it with their story. I am note a writer so I aplogize for the bad writing but it does, in my opinion, get the hints across for the next flag so some consideration for fluidity/plot needs to be taken into account.
